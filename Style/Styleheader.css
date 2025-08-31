@@ -1,0 +1,105 @@
+:root {
+    --primary-color: #00aaff;
+    --bg-color: #000000;
+    --text-color: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+header {
+  width: 100%;
+  padding: 15px 30px;
+  display: flex;
+  background: #000000;
+  justify-content: flex-start;
+  align-items: center;
+  position: relative;
+  border-bottom: 2px solid #00aaff; /* linha neon azul */
+  z-index: 10;
+}
+
+.navbar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 15px 30px;
+}
+
+.logo a {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    font-weight: bold;
+    padding: 15px;
+}
+
+.menu-toggle {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 5px;
+}
+
+.menu-toggle span {
+    height: 3px;
+    width: 30px;
+    background: var(--text-color);
+    border-radius: 3px;
+    transition: all 0.3s;
+}
+
+.overlay-menu {
+    position: fixed;
+    top: 85px;
+    left: -100%;
+    width: 15%;
+    height: calc(100% - 60px);
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    transition: left 0.4s ease;
+    z-index: 5; 
+    border-right: 2px solid transparent;
+}
+
+.overlay-menu.active {
+    left: 0;
+    border-right: 2px solid #00aaff; /* linha neon azul clara */
+}
+
+.overlay-menu .nav-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.overlay-menu .nav-links li a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+.overlay-menu .nav-links li a:hover {
+    color: var(--primary-color);
+}
+
+@media (max-width: 1280px) {
+  /* Ajustes para telas médias */
+}
+
+@media (max-width: 1024px) {
+  /* Ajustes para tablets */
+}
+
+@media (max-width: 800px) {
+  /* Ajustes para telas pequenas */
+}

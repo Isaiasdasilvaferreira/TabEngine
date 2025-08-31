@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="../Style/Styleemailsregistro.css" />
+  <link rel="stylesheet" href="../Style/Styleloading.css" />
+  <link rel="stylesheet" href="../Style/Styleheader.css" />
+  <link rel="icon" href="../Imagens/Logo TabEngine.png" type="image/x-icon" />
+  <title>TabEngine — Turmas e Usuários</title>
+</head>
+
+<body>
+  <div id="loading-screen">
+    <img src="../Imagens/Tab_Engine_mai_rapidin.gif" alt="Carregando..." />
+    <h2>Carregando...</h2>
+  </div>
+
+  <header>
+    <nav class="navbar">
+      <div class="menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="logo">
+        <a href="index.html">TabEngine</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="overlay-menu">
+    <ul class="nav-links">
+      <li><a href="index.html">🏠 Página Inicial</a></li>
+      <li><a href="aadm.html">📈 Cadastrar Professores</a></li>
+      <li><a href="restricoes.html">⚙️ Gerenciar Restrições</a></li>
+      <li><a href="registroemails.html">📑 Registrar turmas e Emails</a></li>
+    </ul>
+  </div>
+
+  <div id="particles-js"></div>
+
+  <div class="form-top">
+    <div class="form-left">
+      <input type="text" id="nomeTurma" placeholder="Nome da turma" />
+      <select id="turnoTurma">
+        <option value="Manhã">Manhã</option>
+        <option value="Tarde">Tarde</option>
+        <option value="Noite">Noite</option>
+      </select>
+      <button class="btn" onclick="addTurma()">Registrar Turma</button>
+    </div>
+  </div>
+
+  <div class="cards-container">
+    <div class="card">
+      <h4 class="card-title">Turmas Cadastradas</h4>
+      <div class="table-wrap">
+        <table id="tableTurmas">
+          <thead>
+            <tr class="txtw">
+              <th>Nome da Turma</th>
+              <th>Turno</th>
+              <th style="width: 90px">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="bodyTurmas">
+            <tr>
+              <td colspan="3" class="muted">Carregando turmas...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const loadingTime = 500;
+
+    setTimeout(() => {
+      document.getElementById("loading-screen").classList.add("fade-out");
+    }, loadingTime);
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDM0lPwywlJsjozXZiEb6hbZtC4RcaqOXM",
+      authDomain: "tabengine-37a4f.firebaseapp.com",
+      projectId: "tabengine-37a4f",
+      storageBucket: "tabengine-37a4f.appspot.com",
+      messagingSenderId: "262670013449",
+      appId: "1:262670013449:web:fc18d33b6fc16c313814d8",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    let turmasCache = [];
+    let currentUser = null;
+
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        subscribeData(user.uid);
+      } else {
+        auth.signInAnonymously().catch(console.error);
+      }
+    });
+
+    function subscribeData(uid) {
+      // Turmas
+      db.collection("turmas")
+        .where("userId", "==", uid)
+        .orderBy("timestamp")
+        .onSnapshot((snap) => {
+          turmasCache = snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+            timestamp: d.data().timestamp?.toDate(),
+          }));
+          renderTurmas();
+        });
+    }
+
+    function renderTurmas() {
+      const body = document.getElementById("bodyTurmas");
+      if (!turmasCache.length) {
+        body.innerHTML = '<tr><td colspan="3" class="muted">Nenhuma turma cadastrada.</td></tr>';
+        return;
+      }
+      body.innerHTML = "";
+      turmasCache.forEach((t) => {
+        body.innerHTML += `
+          <tr>
+            <td>${t.nome}</td>
+            <td>
+              <select onchange="updateTurno('${t.id}', this.value)">
+                <option ${t.turno == "Manhã" ? "selected" : ""}>Manhã</option>
+                <option ${t.turno == "Tarde" ? "selected" : ""}>Tarde</option>
+                <option ${t.turno == "Noite" ? "selected" : ""}>Noite</option>
+              </select>
+            </td>
+            <td style="text-align:right"><button onclick="deleteTurma('${t.id}')">Remover</button></td>
+          </tr>`;
+      });
+    }
+
+    function addTurma() {
+      const nomeTurma = document.getElementById("nomeTurma").value.trim();
+      const turno = document.getElementById("turnoTurma").value;
+      if (!nomeTurma) return alert("Digite o nome da turma.");
+
+      if (turmasCache.find((t) => t.nome === nomeTurma))
+        return alert("Turma já cadastrada.");
+
+      db.collection("turmas").add({
+        nome: nomeTurma,
+        turno: turno,
+        userId: currentUser.uid,
+        timestamp: new Date(),
+      });
+
+      document.getElementById("nomeTurma").value = "";
+    }
+
+    function updateTurno(id, value) {
+      db.collection("turmas").doc(id).update({ turno: value });
+    }
+
+    function deleteTurma(id) {
+      db.collection("turmas").doc(id).delete();
+    }
+
+    // Partículas
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 110, density: { enable: true, value_area: 800 } },
+        color: { value: "#00aaff" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5 },
+        size: { value: 3, random: true },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#00aaff",
+          opacity: 0.4,
+          width: 1,
+        },
+        move: { enable: true, speed: 4, out_mode: "out" },
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: { onhover: { enable: false }, onclick: { enable: false }, resize: true },
+      },
+      retina_detect: true,
+    });
+
+    const toggle = document.querySelector('.menu-toggle');
+    const overlayMenu = document.querySelector('.overlay-menu');
+
+    toggle.addEventListener('click', () => {
+      overlayMenu.classList.toggle('active');
+    });
+  </script>
+</body>
+
+</html>

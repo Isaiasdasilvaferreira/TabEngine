@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gerenciamento de Restrições - TabEngine</title>
+  <link rel="stylesheet" href="../Style/Stylerestricoes.css" />
+  <link rel="stylesheet" href="../Style/Styleloading.css" />
+  <link rel="stylesheet" href="../Style/Styleheader.css" />
+  <link rel="icon" href="../Imagens/Logo TabEngine.png" type="image/x-icon" />
+</head>
+
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="logo">
+        <a href="index.html">TabEngine</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="overlay-menu">
+    <ul class="nav-links">
+      <li><a href="index.html">🏠 Página Inicial</a></li>
+      <li><a href="aadm.html">📈 Cadastrar Professores</a></li>
+      <li><a href="restricoes.html">⚙️ Gerenciar Restrições</a></li>
+      <li><a href="registroemails.html">📑 Registrar turmas e Emails</a></li>
+    </ul>
+  </div>
+
+  <div id="loading-screen">
+    <img src="../Imagens/Tab_Engine_mai_rapidin.gif" alt="Carregando..." />
+    <h2>Carregando...</h2>
+  </div>
+
+  <div id="particles-js"></div>
+
+  <div class="container">
+    <h1>Gerenciamento de Restrições</h1>
+
+    <label for="filtroTurma">Filtrar por Turma:</label>
+    <select id="filtroTurma" aria-label="Filtrar professores por turma">
+      <option value=""> Todas as turmas </option>
+    </select>
+
+
+    <div class="tabela-container">
+      <table aria-label="Tabela de professores">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Sobrenome</th>
+            <th>Matéria</th>
+            <th>Turma</th>
+          </tr>
+        </thead>
+        <tbody id="professoresTabela">
+          <tr>
+            <td colspan="4" style="color:#777;">Carregando professores...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <hr style="border-color: #00aaff44; margin: 25px 0;">
+
+    <h2 style="color: #00aaff;">Restrições do Professor Selecionado</h2>
+    <div id="perfilProfessor" aria-live="polite" aria-atomic="true" style="min-height:150px; color:#ddd;">
+      <p>Nenhum Professor Selecionado.</p>
+    </div>
+
+    <form id="formRestricao" aria-label="Formulário para adicionar restrição">
+      <label for="descricao" style="color: #00aaff; font-size: 2;"><strong>Descrição da Restrição<strong></label>
+      <textarea id="descricao" name="descricao" placeholder="Ex: Não pode dar aula às 8h" required></textarea>
+
+      <label for="tipo" style="color: #00aaff; font-weight: bold;">Tipo da Restrição</label>
+      <select id="tipo" name="tipo" required>
+        <option value="">Selecione</option>
+        <option value="Horário">Horário</option>
+        <option value="Dia da Semana">Dia da Semana</option>
+        <option value="Outro">Outro</option>
+      </select>
+
+      <button type="submit" disabled id="btnAdicionar">Adicionar Restrição</button>
+      <button id="formatarTabelaBtn" type="button" style="margin-top: 10px;">Formatar Tabela</button>
+    </form>
+
+    <h2 style="margin-top: 30px;">Tabela Gerada</h2>
+    <table id="tabelaHorarios" style="width:100%; border-collapse: collapse; text-align:center; color:#ddd;">
+      <thead style="background:#00aaff22;">
+        <tr>
+          <th>Dia</th>
+          <th contenteditable="true">07:30</th>
+          <th contenteditable="true">08:20</th>
+          <th contenteditable="true">09:10</th>
+          <th contenteditable="true">10:20</th>
+          <th contenteditable="true">11:10</th>
+          <th contenteditable="true">12:00</th>
+        </tr>
+        <tr>
+      </thead>
+      <tbody id="corpoTabelaHorarios">
+        <tr>
+          <td colspan="7" style="color:#aaa;">Clique em "Formatar tabela" para gerar os horários.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div id="mensagemFeedback" role="alert" aria-live="assertive"></div>
+  </div>
+
+
+  <!-- Biblioteca de partículas -->
+
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <script>
+
+    const loadingTime = 500;
+
+    setTimeout(() => {
+      document.getElementById("loading-screen").classList.add("fade-out");
+    }, loadingTime);
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      particlesJS('particles-js', {
+        particles: {
+          number: { value: 110, density: { enable: true, value_area: 800 } },
+          color: { value: "#00aaff" },
+          shape: { type: "circle" },
+          opacity: { value: 0.45 },
+          size: { value: 2.8, random: true },
+          line_linked: {
+            enable: true,
+            distance: 150,
+            color: "#00aaff",
+            opacity: 0.3,
+            width: 1
+          },
+          move: {
+            enable: true,
+            speed: 4,
+            out_mode: "out"
+          }
+        },
+        interactivity: {
+          detect_on: "canvas",
+          events: { onhover: { enable: false }, onclick: { enable: false }, resize: true }
+        },
+        retina_detect: true
+      });
+    });
+  </script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDM0lPwywlJsjozXZiEb6hbZtC4RcaqOXM",
+      authDomain: "tabengine-37a4f.firebaseapp.com",
+      projectId: "tabengine-37a4f",
+      storageBucket: "tabengine-37a4f.firebasestorage.app",
+      messagingSenderId: "262670013449",
+      appId: "1:262670013449:web:fc18d33b6fc16c313814d8",
+      measurementId: "G-7K8EW4FD1R"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let professores = [];
+    let restricoes = [];
+    let professorSelecionadoId = null;
+
+    const filtroTurma = document.getElementById('filtroTurma');
+    const tabelaProfessores = document.getElementById('professoresTabela');
+    const perfilProfessorDiv = document.getElementById('perfilProfessor');
+    const descricaoInput = document.getElementById('descricao');
+    const tipoSelect = document.getElementById('tipo');
+    const btnAdicionar = document.getElementById('btnAdicionar');
+    const mensagemFeedback = document.getElementById('mensagemFeedback');
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        // Primeiro carregamos as turmas
+        carregarTurmasNoFiltro();
+        // Depois carregamos os professores
+        carregarProfessores();
+      } else {
+        alert("Você precisa estar logado para acessar essa página.");
+        window.location.href = "inicio.html";
+      }
+    });
+
+    function carregarProfessores() {
+      const user = firebase.auth().currentUser;
+
+      db.collection("professores")
+        .where("userId", "==", user.uid)
+        .onSnapshot(snapshot => {
+          professores = [];
+          snapshot.forEach(doc => {
+            professores.push({ id: doc.id, ...doc.data() });
+          });
+          exibirProfessores();
+        });
+    }
+
+    function carregarRestricoes(professorId) {
+      const user = firebase.auth().currentUser;
+      db.collection("restricoes")
+        .where("professorId", "==", professorId)
+        .where("userId", "==", user.uid)
+        .get()
+        .then(snapshot => {
+          restricoes = [];
+          snapshot.forEach(doc => {
+            restricoes.push({ id: doc.id, ...doc.data() });
+          });
+          exibirRestricoes();
+        });
+    }
+
+    function exibirProfessores() {
+      const turmaFiltro = filtroTurma.value;
+      tabelaProfessores.innerHTML = "";
+
+      let profsFiltrados = professores;
+      if (turmaFiltro) {
+        profsFiltrados = professores.filter(p => p.turma === turmaFiltro);
+      }
+
+      if (profsFiltrados.length === 0) {
+        tabelaProfessores.innerHTML = `<tr><td colspan="4" style="color:#777;">Nenhum professor encontrado.</td></tr>`;
+        perfilProfessorDiv.innerHTML = "<p>Nenhum professor selecionado.</p>";
+        professorSelecionadoId = null;
+        btnAdicionar.disabled = true;
+        return;
+      }
+
+      profsFiltrados.forEach(prof => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+        <td>${prof.nome}</td>
+        <td>${prof.sobrenome}</td>
+        <td>${prof.materia}</td>
+        <td>${prof.turma}</td>
+      `;
+
+        tr.tabIndex = 0;
+        tr.style.cursor = "pointer";
+        tr.onclick = () => selecionarProfessor(prof.id);
+        tr.onkeypress = (e) => { if (e.key === 'Enter') selecionarProfessor(prof.id); };
+
+        tabelaProfessores.appendChild(tr);
+      });
+    }
+
+    function selecionarProfessor(profId) {
+      professorSelecionadoId = profId;
+      const prof = professores.find(p => p.id === profId);
+
+      if (!prof) return;
+
+      perfilProfessorDiv.innerHTML = `
+   <table>
+    <thead>
+      <tr>
+
+        <th>Nome</th>
+        <th>Sobrenome</th>
+        <th>Disciplina</th>
+        <th>Turma</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>${prof.nome}</td>
+        <td>${prof.sobrenome}</td>
+        <td>${prof.materia}</td>
+        <td>${prof.turma}</td>
+      </tr>
+    </tbody>
+  </table>
+
+    <label for="limiteAulas">Limite de aulas semanais:</label>
+    <input type="number" id="limiteAulas" min="1" max="30" value="${prof.limiteAulas || 4}" />
+
+    <h4>Restrições:</h4>
+    <div id="listaRestricoes"></div>
+
+    <button id="btnSalvarLimite" style="margin-top:10px;">Salvar limite</button>
+  `;
+
+      btnAdicionar.disabled = false;
+      descricaoInput.value = "";
+      tipoSelect.value = "";
+
+      carregarRestricoes(profId);
+
+      // Evento para salvar limite alterado
+      document.getElementById("btnSalvarLimite").onclick = () => {
+        const novoLimite = parseInt(document.getElementById("limiteAulas").value);
+        if (isNaN(novoLimite) || novoLimite < 1) {
+          alert("Digite um limite válido (>= 1)");
+          return;
+        }
+        // Atualiza localmente no array professores
+        prof.limiteAulas = novoLimite;
+
+        // Salvar no Firebase
+        db.collection("professores").doc(profId).update({
+          limiteAulas: novoLimite
+        }).then(() => {
+          mostrarMensagem("Limite salvo com sucesso!", false);
+        }).catch(() => {
+          mostrarMensagem("Erro ao salvar limite.", true);
+        });
+      };
+    }
+
+    // Exibir restrições do professor selecionado
+    function exibirRestricoes() {
+      const listaDiv = document.getElementById("listaRestricoes");
+      if (!listaDiv) return;
+
+      if (restricoes.length === 0) {
+        listaDiv.innerHTML = "<p style='color:#aaa;'>Nenhuma restrição cadastrada.</p>";
+        return;
+      }
+
+      listaDiv.innerHTML = "";
+      restricoes.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "restricao-item";
+        div.innerHTML = `
+        <span>${r.descricao}</span>
+        <span class="tipo">${r.tipo}</span>
+        <button class="btn-excluir" aria-label="Excluir restrição" onclick="removerRestricao('${r.id}')">✖</button>
+      `;
+        listaDiv.appendChild(div);
+      });
+    }
+
+    // Adicionar nova restrição no Firestore
+    document.getElementById('formRestricao').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      if (!professorSelecionadoId) {
+        mostrarMensagem("Selecione um professor antes de adicionar restrições.", true);
+        return;
+      }
+
+      const descricao = descricaoInput.value.trim();
+      const tipo = tipoSelect.value;
+
+      if (!descricao || !tipo) {
+        mostrarMensagem("Preencha todos os campos da restrição.", true);
+        return;
+      }
+
+      btnAdicionar.disabled = true;
+      mostrarMensagem("Salvando restrição...", false);
+
+      const user = firebase.auth().currentUser;
+
+      db.collection("restricoes").add({
+        professorId: professorSelecionadoId,
+        descricao,
+        tipo,
+        userId: user.uid
+      }).then(() => {
+        descricaoInput.value = "";
+        tipoSelect.value = "";
+        mostrarMensagem("Restrição adicionada com sucesso.", false);
+        carregarRestricoes(professorSelecionadoId);
+      }).catch(err => {
+        mostrarMensagem("Erro ao salvar restrição.", true);
+        console.error(err);
+      }).finally(() => {
+        btnAdicionar.disabled = false;
+      });
+    });
+
+    // Remover restrição
+    function removerRestricao(id) {
+
+      db.collection("restricoes").doc(id).delete()
+        .then(() => {
+          mostrarMensagem("Restrição removida.", false);
+          carregarRestricoes(professorSelecionadoId);
+        })
+        .catch(err => {
+          mostrarMensagem("Erro ao remover restrição.", true);
+          console.error(err);
+        });
+    }
+
+    // Mensagem de feedback ao usuário
+    function mostrarMensagem(texto, isErro = false) {
+      mensagemFeedback.textContent = texto;
+      mensagemFeedback.className = isErro ? "erro" : "";
+    }
+
+    filtroTurma.addEventListener("change", () => {
+      exibirProfessores();
+      perfilProfessorDiv.innerHTML = '<p>Nenhum professor selecionado.</p>';
+      professorSelecionadoId = null;
+      btnAdicionar.disabled = true;
+      mensagemFeedback.textContent = "";
+    });
+
+    // Ação botão formatar tabela
+    document.getElementById('formatarTabelaBtn').addEventListener('click', () => {
+      organizarHorarios();
+    });
+
+    function preencherTabelaHorarios(grade) {
+      const corpoTabela = document.getElementById("corpoTabelaHorarios");
+      const horarios = ["07:30", "08:20", "09:10", "10:20", "11:10", "12:00"];
+      const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
+
+      corpoTabela.innerHTML = ""; // limpa a tabela
+
+      for (const dia of dias) {
+        const linha = document.createElement("tr");
+        linha.innerHTML = `<td>${dia}</td>`;
+
+        for (const hora of horarios) {
+          const chave = `${dia}_${hora}`;
+          const celula = document.createElement("td");
+
+          if (grade[chave]) {
+            const info = grade[chave];
+            celula.innerHTML = `
+          <strong>${info.professor}</strong><br>
+          <small>${info.materia}</small><br>
+          <em>${info.turma}</em>
+        `;
+          } else {
+            celula.innerHTML = "<span style='color:#888;'>Livre</span>";
+          }
+
+          linha.appendChild(celula);
+        }
+
+        corpoTabela.appendChild(linha);
+      }
+    }
+  </script>
+
+  <script>
+    function abrirNovaAbaComTabela(grade) {
+      const novaJanela = window.open("", "_blank");
+      const slots = ["07:30", "08:20", "09:10", "10:20", "11:10", "12:00"];
+
+      let html = `
+    <html>
+    <head>
+      <title>Grade de Horários</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #121212; color: #ddd; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #444; padding: 8px; text-align: center; }
+        th { background-color: #00aaff; color: white; }
+        button { margin: 10px 0; padding: 8px 12px; font-size: 16px; cursor: pointer; }
+      </style>
+    </head>
+    <body>
+      <h2>Grade de Horários</h2>
+      <button id="btnDownload">Download CSV</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Horário</th>
+            <th>Professor</th>
+            <th>Matéria</th>
+            <th>Turma</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+      for (const slot of slots) {
+        const dado = grade[slot];
+        if (dado) {
+          html += `<tr>
+        <td>${slot}</td>
+        <td>${dado.professor}</td>
+        <td>${dado.materia}</td>
+        <td>${dado.turma}</td>
+      </tr>`;
+        } else {
+          html += `<tr>
+        <td>${slot}</td>
+        <td colspan="3" style="color:#888;">Livre</td>
+      </tr>`;
+        }
+      }
+
+      html += `
+        </tbody>
+      </table>
+
+      <script>
+        function baixarCSV() {
+          let csv = "Horário,Professor,Matéria,Turma\\n";
+          const rows = document.querySelectorAll("table tbody tr");
+          rows.forEach(row => {
+            const cols = row.querySelectorAll("td");
+            let rowData = [];
+            cols.forEach(col => {
+              rowData.push(col.textContent.trim().replace(/,/g, ";"));
+            });
+            csv += rowData.join(",") + "\\n";
+          });
+
+          const blob = new Blob([csv], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "grade_horarios.csv";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+
+        document.getElementById("btnDownload").addEventListener("click", baixarCSV);
+      <\/script>
+    </body>
+    </html>
+  `;
+
+      novaJanela.document.write(html);
+      novaJanela.document.close();
+    }
+
+    async function organizarHorarios() {
+      try {
+        const user = firebase.auth().currentUser;
+
+        const professoresSnap = await db.collection("professores")
+          .where("userId", "==", user.uid).get();
+
+        const restricoesSnap = await db.collection("restricoes")
+          .where("userId", "==", user.uid).get();
+
+        const professores = professoresSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const restricoes = restricoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const turmaSelecionada = document.getElementById("filtroTurma").value;
+
+        const professoresComLimite = professores.map(p => ({
+          ...p,
+          limiteAulas: p.limiteAulas || 4
+        }));
+
+        const resposta = await fetch("http://localhost:5000/formatar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            professores: professoresComLimite,
+            restricoes,
+            turmasSelecionadas: turmaSelecionada ? [turmaSelecionada] : []
+          })
+        });
+
+        if (!resposta.ok) {
+          throw new Error(`HTTP error! status: ${resposta.status}`);
+        }
+
+        const resultado = await resposta.json();
+
+        if (resultado.status === "ok") {
+          preencherTabelaHorarios(resultado.grade);
+          mostrarMensagem("Tabela gerada com sucesso!", false);
+          abrirNovaAbaComTabela(resultado.grade);
+        } else {
+          mostrarMensagem("Erro ao gerar tabela.", true);
+        }
+      } catch (err) {
+        console.error(err);
+        mostrarMensagem("Erro ao conectar com o servidor.", true);
+      }
+    }
+
+    document.getElementById('formatarTabelaBtn').addEventListener('click', (event) => {
+      event.preventDefault();
+      organizarHorarios();
+    });
+
+    function carregarTurmasNoFiltro() {
+      const select = document.getElementById("filtroTurma");
+      select.innerHTML = '<option value="">Todas as turmas</option>';
+
+      const grupos = {
+        Manhã: [],
+        Tarde: [],
+        Noite: [],
+      };
+
+      db.collection("turmas").get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach(doc => {
+            const turma = { id: doc.id, ...doc.data() }; // pega id + dados
+            if (grupos[turma.turno]) {
+              grupos[turma.turno].push(turma);
+            }
+          });
+
+          // Função para extrair número inicial do nome da turma
+          function extrairNumero(nome) {
+            const match = nome.match(/^(\d+)/);
+            return match ? parseInt(match[1]) : Number.MAX_SAFE_INTEGER;
+          }
+
+          // Ordenação dentro de cada turno
+          for (const turno in grupos) {
+            grupos[turno].sort((a, b) => {
+              const numA = extrairNumero(a.nome);
+              const numB = extrairNumero(b.nome);
+
+              if (numA !== numB) return numA - numB;
+
+              const textoA = a.nome.replace(/^\d+\s*/, "").toLowerCase();
+              const textoB = b.nome.replace(/^\d+\s*/, "").toLowerCase();
+              return textoA.localeCompare(textoB, "pt-BR");
+            });
+          }
+
+          // Ordem fixa dos turnos
+          const ordemTurnos = ["Manhã", "Tarde", "Noite"];
+
+          ordemTurnos.forEach((turno) => {
+            if (grupos[turno].length > 0) {
+              const optgroup = document.createElement("optgroup");
+              optgroup.label = turno;
+
+              grupos[turno].forEach(turma => {
+                const option = document.createElement("option");
+                option.value = turma.nome;
+                option.textContent = turma.nome;
+                optgroup.appendChild(option);
+              });
+
+              select.appendChild(optgroup);
+            }
+          });
+        })
+        .catch(error => {
+          console.error("Erro ao carregar turmas para filtro:", error);
+        });
+    }
+
+    const toggle = document.querySelector('.menu-toggle');
+    const overlayMenu = document.querySelector('.overlay-menu');
+
+    toggle.addEventListener('click', () => {
+      overlayMenu.classList.toggle('active');
+    });
+  </script>
+</body>
+
+</html>

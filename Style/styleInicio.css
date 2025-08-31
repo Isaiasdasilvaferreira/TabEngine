@@ -1,0 +1,118 @@
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    position: relative;
+    z-index: 0;
+  }
+
+  #particles-js {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: transparent;
+    z-index: -1;
+    user-select: none;
+  }
+
+  .login-container {
+    position: relative;
+    z-index: 1;
+    background-color: #111;
+    padding: 2.5rem 3.5rem;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 170, 255, 0.8);
+    width: 360px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .login-container h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    font-size: 2rem;
+    letter-spacing: 1px;
+    color: #00aaff;
+  }
+
+  form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  label {
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #a0cfff;
+  }
+
+  input[type="email"],
+  input[type="password"] {
+    background-color: #222;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    color: white;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  input[type="email"]::placeholder,
+  input[type="password"]::placeholder {
+    color: #666;
+  }
+
+  input[type="email"]:focus,
+  input[type="password"]:focus {
+    outline: none;
+    border-color: #00aaff;
+    box-shadow: 0 0 8px #00aaff;
+  }
+
+  button[type="submit"] {
+    background: linear-gradient(90deg, #00aaff, #005f99);
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+
+  button[type="submit"]:hover {
+    background: linear-gradient(90deg, #0077cc, #003f66);
+    transform: scale(1.05);
+  }
+
+  button[type="submit"]:active {
+    transform: scale(0.98);
+  }
+
+  @media (max-width: 1280px) {
+    /* Ajustes para telas médias */
+  }
+
+  @media (max-width: 1024px) {
+    /* Ajustes para tablets */
+  }
+
+  @media (max-width: 800px) {
+    /* Ajustes para telas pequenas */
+  }

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      Registro de Ponto - <span id="tituloMesAno"> - TabEngine</span>
+    </title>
+    <link rel="stylesheet" href="../Style/Stylepoint.css" />
+    <link rel="stylesheet" href="../Style/Styleloading.css" />
+    <link rel="icon" href="../Imagens/Logo TabEngine.png" type="image/x-icon" />
+  </head>
+  <body>
+    <div id="loading-screen">
+      <img src="../Imagens/Tab_Engine_mai_rapidin.gif" alt="Carregando..." />
+      <h2>Carregando...</h2>
+    </div>
+
+    <div id="particles-js"></div>
+
+    <div class="container" id="conteudoPrincipal">
+      <h2 id="tituloMesAno">Registro de Ponto</h2>
+      <div class="info">
+        Para registrar o ponto, digite o código do dia fornecido pela gestão.
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Entrada</th>
+              <th>Saída</th>
+              <th>Registrar Ponto</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCorpo"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <script>
+      const loadingTime = 500;
+
+      setTimeout(() => {
+        document.getElementById("loading-screen").classList.add("fade-out");
+      }, loadingTime);
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDM0lPwywlJsjozXZiEb6hbZtC4RcaqOXM",
+        authDomain: "tabengine-37a4f.firebaseapp.com",
+        projectId: "tabengine-37a4f",
+        storageBucket: "tabengine-37a4f.appspot.com",
+        messagingSenderId: "262670013449",
+        appId: "1:262670013449:web:fc18d33b6fc16c313814d8",
+        measurementId: "G-7K8EW4FD1R",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      function formatarData(d) {
+        const dia = String(d.getDate()).padStart(2, "0");
+        const mes = String(d.getMonth() + 1).padStart(2, "0");
+        const ano = d.getFullYear();
+        return `${dia}/${mes}/${ano}`;
+      }
+
+      function formatarHora(d) {
+        const h = String(d.getHours()).padStart(2, "0");
+        const m = String(d.getMinutes()).padStart(2, "0");
+        const s = String(d.getSeconds()).padStart(2, "0");
+        return `${h}:${m}:${s}`;
+      }
+
+      function atualizarTituloMesAno(data) {
+        const meses = [
+          "Janeiro",
+          "Fevereiro",
+          "Março",
+          "Abril",
+          "Maio",
+          "Junho",
+          "Julho",
+          "Agosto",
+          "Setembro",
+          "Outubro",
+          "Novembro",
+          "Dezembro",
+        ];
+        const titulo = document.getElementById("tituloMesAno");
+        titulo.textContent = `Registro de Ponto - ${
+          meses[data.getMonth()]
+        } ${data.getFullYear()}`;
+        document.title = titulo.textContent;
+      }
+
+      firebase.auth().onAuthStateChanged(async (user) => {
+        if (!user) {
+          alert("Você precisa estar logado.");
+          window.location.href = "login.html";
+          return;
+        }
+        iniciarTabelaDinamica(user);
+      });
+
+      async function iniciarTabelaDinamica(user) {
+        let ultimoDiaRenderizado = null;
+
+        function renderizarDiaAtual() {
+          const hoje = new Date();
+          const dataFormatada = formatarData(hoje);
+
+          if (ultimoDiaRenderizado === dataFormatada) return;
+
+          ultimoDiaRenderizado = dataFormatada;
+          atualizarTituloMesAno(hoje);
+
+          const tabelaCorpo = document.getElementById("tabelaCorpo");
+          tabelaCorpo.innerHTML = "";
+
+          const tr = document.createElement("tr");
+
+          // Colunas da tabela
+          const tdData = document.createElement("td");
+          tdData.textContent = dataFormatada;
+          tr.appendChild(tdData);
+
+          const tdEntrada = document.createElement("td");
+          tdEntrada.textContent = "-";
+          tr.appendChild(tdEntrada);
+
+          const tdSaida = document.createElement("td");
+          tdSaida.textContent = "-";
+          tr.appendChild(tdSaida);
+
+          const tdBotao = document.createElement("td");
+
+          tdBotao.style.display = "flex";
+          tdBotao.style.gap = "10px";
+          tdBotao.style.flexWrap = "wrap";
+          tdBotao.style.justifyContent = "center";
+
+          const btnValidar = document.createElement("button");
+          btnValidar.textContent = "Validar Código";
+          tdBotao.appendChild(btnValidar);
+
+          const btnEntrada = document.createElement("button");
+          btnEntrada.textContent = "Registrar Entrada";
+          btnEntrada.disabled = true;
+          tdBotao.appendChild(btnEntrada);
+
+          const btnSaida = document.createElement("button");
+          btnSaida.textContent = "Registrar Saída";
+          btnSaida.disabled = true;
+          tdBotao.appendChild(btnSaida);
+
+          tr.appendChild(tdBotao);
+          tabelaCorpo.appendChild(tr);
+
+          let horarioEntrada = null;
+
+          // Carregar registros de pontos
+          db.collection("registro_ponto")
+            .doc(user.uid)
+            .get()
+            .then((doc) => {
+              if (doc.exists) {
+                const data = doc.data();
+                const registro = data[dataFormatada]; // pega diretamente pelo nome do dia
+                if (registro && registro.entrada) {
+                  const dtEntrada = registro.entrada.toDate();
+                  horarioEntrada = dtEntrada;
+                  tdEntrada.textContent = `${formatarHora(
+                    dtEntrada
+                  )} - ${dataFormatada} - ${
+                    registro.professor || user.displayName || user.email
+                  }`;
+                  btnValidar.disabled = true;
+                  btnEntrada.disabled = true;
+                  btnEntrada.textContent = "Entrada Registrada";
+
+                  if (registro.saida) {
+                    const dtSaida = registro.saida.toDate();
+                    tdSaida.textContent = `${formatarHora(
+                      dtSaida
+                    )} - ${dataFormatada} - ${
+                      registro.professorSaida || user.displayName || user.email
+                    }`;
+                    btnSaida.disabled = true;
+                    btnSaida.textContent = "Saída Registrada";
+                  } else {
+                    const agora = new Date();
+                    const diffMs = agora - dtEntrada;
+                    if (diffMs >= 30 * 60 * 1000) {
+                      btnSaida.disabled = false;
+                    } else {
+                      btnSaida.disabled = true;
+                      const msRestantes = 30 * 60 * 1000 - diffMs;
+                      setTimeout(() => {
+                        btnSaida.disabled = false;
+                      }, msRestantes);
+                    }
+                  }
+                }
+              }
+            })
+            .catch(console.error);
+
+          // Ao clicar em validar código
+          btnValidar.addEventListener("click", async () => {
+            const codigoDigitado = prompt(
+              "Digite o código do dia fornecido pela gestão:"
+            );
+            if (!codigoDigitado || codigoDigitado.trim() === "") {
+              alert("Código inválido.");
+              return;
+            }
+
+            btnValidar.disabled = true;
+            btnValidar.textContent = "Validando código...";
+
+            try {
+              const codigoDoc = await db
+                .collection("codigos_diarios")
+                .doc(user.uid)
+                .get();
+
+              if (!codigoDoc.exists) {
+                alert("Código diário não encontrado. Contate a gestão.");
+                btnValidar.disabled = false;
+                btnValidar.textContent = "Validar Código";
+                return;
+              }
+
+              const codigoValido = codigoDoc.data().senha;
+
+              if (codigoDigitado.trim() !== codigoValido) {
+                alert("Código incorreto. Tente novamente.");
+                btnValidar.disabled = false;
+                btnValidar.textContent = "Validar Código";
+                return;
+              }
+
+              alert("Código válido! Agora você pode bater o ponto.");
+              btnValidar.textContent = "Código Validado";
+              btnValidar.disabled = true;
+              btnEntrada.disabled = false;
+            } catch (error) {
+              console.error("Erro ao validar código:", error);
+              alert("Erro ao validar código. Tente novamente.");
+              btnValidar.disabled = false;
+              btnValidar.textContent = "Validar Código";
+            }
+          });
+
+          // Ao clicar em registrar entrada
+          btnEntrada.addEventListener("click", async () => {
+            btnEntrada.disabled = true;
+            btnEntrada.textContent = "Registrando entrada...";
+
+            try {
+              const agora = firebase.firestore.Timestamp.now();
+
+              // Documento de usuário
+              await db
+                .collection("registro_ponto")
+                .doc(user.uid)
+                .set(
+                  {
+                    userId: user.uid,
+                    [dataFormatada]: {
+                      entrada: firebase.firestore.Timestamp.now(),
+                      professor: user.email,
+                    },
+                  },
+                  { merge: true }
+                );
+
+              const dtAgora = agora.toDate();
+              tdEntrada.textContent = `${formatarHora(
+                dtAgora
+              )} - ${dataFormatada} - ${user.email}`;
+              horarioEntrada = dtAgora;
+
+              btnEntrada.textContent = "Entrada Registrada";
+              btnValidar.disabled = true;
+              btnSaida.disabled = true;
+
+              setTimeout(() => {
+                btnSaida.disabled = false;
+              }, 30 * 60 * 1000);
+            } catch (error) {
+              console.error("Erro ao registrar entrada:", error);
+              alert("Erro ao registrar entrada. Tente novamente.");
+              btnEntrada.disabled = false;
+              btnEntrada.textContent = "Registrar Entrada";
+            }
+          });
+
+          // Ao clicar em registrar saída
+          btnSaida.addEventListener("click", async () => {
+            const agora = firebase.firestore.Timestamp.now();
+
+            try {
+              const userDocRef = db.collection("registro_ponto").doc(user.uid);
+
+              await userDocRef.set(
+                {
+                  userId: user.uid,
+                  [dataFormatada]: {
+                    saida: agora,
+                    professorSaida: user.email,
+                  },
+                },
+                { merge: true }
+              );
+
+              const dtAgora = agora.toDate();
+              tdSaida.textContent = `${formatarHora(
+                dtAgora
+              )} - ${dataFormatada} - ${user.email}`;
+
+              btnSaida.textContent = "Saída Registrada";
+              btnSaida.disabled = true;
+            } catch (error) {
+              console.error("Erro ao registrar saída:", error);
+              alert("Erro ao registrar saída. Tente novamente.");
+              btnSaida.disabled = false;
+              btnSaida.textContent = "Registrar Saída";
+            }
+          });
+        }
+
+        const tabelaCorpo = document.getElementById("tabelaCorpo");
+        renderizarDiaAtual();
+      }
+    </script>
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+      particlesJS("particles-js", {
+        particles: {
+          number: {
+            value: 110,
+            density: { enable: true, value_area: 800 },
+          },
+          color: { value: "#00aaff" },
+          shape: { type: "circle" },
+          opacity: { value: 0.45 },
+          size: { value: 2.8, random: true },
+          line_linked: {
+            enable: true,
+            distance: 150,
+            color: "#00aaff",
+            opacity: 0.3,
+            width: 1,
+          },
+          move: {
+            enable: true,
+            speed: 4,
+            out_mode: "out",
+          },
+        },
+        interactivity: {
+          detect_on: "canvas",
+          events: {
+            onhover: { enable: false },
+            onclick: { enable: false },
+            resize: true,
+          },
+        },
+        retina_detect: true,
+      });
+    </script>
+  </body>
+</html>

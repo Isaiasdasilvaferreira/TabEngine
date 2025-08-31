@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TabEngine</title>
+<link rel="stylesheet" href="../Style/styleInicio.css"/>
+<link rel="icon" href="../Imagens/Logo TabEngine.png" type="image/x-icon"/>
+</head>
+<body>
+
+<div id="particles-js"></div>
+
+<div class="login-container">
+  <h2>TabEngine - Login</h2>
+  <img src="https://i.ibb.co/cSg3NBR8/Tab-Engine-5.png" alt="TabEngine.logo" style="width:200px;height:200px;">
+  <form id="login-form" autocomplete="off" novalidate>
+    <label for="email">E-mail</label>
+    <input type="email" id="email" name="email" placeholder="seu@email.com" required />
+    
+    <label for="password">Senha</label>
+    <input type="password" id="password" name="password" placeholder="Sua senha" required />
+    
+    <button type="submit">Entrar</button>
+  </form>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDM0lPwywlJsjozXZiEb6hbZtC4RcaqOXM",
+  authDomain: "tabengine-37a4f.firebaseapp.com",
+  projectId: "tabengine-37a4f",
+  storageBucket: "tabengine-37a4f.appspot.com",
+  messagingSenderId: "262670013449",
+  appId: "1:262670013449:web:fc18d33b6fc16c313814d8",
+  measurementId: "G-7K8EW4FD1R"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+const loginForm = document.getElementById('login-form');
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!email || !password) {
+    alert('Por favor, preencha e-mail e senha.');
+    return;
+  }
+
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    window.location.href = 'index.html';
+  } catch (error) {
+    alert('Erro no login: ' + error.message);
+  }
+});
+
+particlesJS('particles-js', {
+  particles: {
+    number: { value: 110, density: { enable: true, value_area: 800 } },
+    color: { value: "#00aaff" },
+    shape: { type: "circle" },
+    opacity: { value: 0.5 },
+    size: { value: 3, random: true },
+    line_linked: { enable: true, distance: 150, color: "#00aaff", opacity: 0.4, width: 1 },
+    move: { enable: true, speed: 4, out_mode: "out" }
+  },
+  interactivity: {
+    detect_on: "canvas",
+    events: {
+      onhover: { enable: false },
+      onclick: { enable: false },
+      resize: true
+    }
+  },
+  retina_detect: true
+});
+</script>
+</body>
+</html>

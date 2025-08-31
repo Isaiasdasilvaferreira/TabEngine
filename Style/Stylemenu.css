@@ -1,0 +1,109 @@
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #000;
+        color: #fff;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      #particles-js {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
+
+      .menu-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        padding: 250px 2rem 2rem;
+        position: relative;
+        z-index: 1;
+        margin-top: 90px;
+      }
+
+      .menu-container button {
+        width: 320px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #ccefff;
+        background-color: #111;
+        border: 2px solid #00aaff;
+        border-radius: 12px;
+        box-shadow: 0 0 12px rgba(0, 170, 255, 0.3);
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease,
+          color 0.3s ease;
+      }
+
+      .menu-container button:hover {
+        background-color: #00aaff;
+        color: #000;
+        transform: translateY(-4px);
+        box-shadow: 0 0 20px rgba(0, 170, 255, 0.6);
+      }
+
+      .logo-titulo-container {
+        position: fixed;
+        top: 220px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 1000;
+        user-select: none;
+        pointer-events: none;
+      }
+
+      .logo-texto {
+        font-size: 70px;
+        font-family: Arial, sans-serif;
+        color: #00aaff;
+        text-shadow: 0 0 2px #0044ff, 0 0 5px #0044ff, 0 0 10px #0044ff;
+      }
+
+      body::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      body::-webkit-scrollbar-track {
+        background: #111;
+      }
+
+      body::-webkit-scrollbar-thumb {
+        background-color: #00aaff;
+        border-radius: 10px;
+        border: 2px solid #111;
+      }
+
+      @media (max-width: 1280px) {
+        /* Ajustes para telas médias */
+      }
+
+      @media (max-width: 1024px) {
+        /* Ajustes para tablets */
+      }
+
+      @media (max-width: 800px) {
+        /* Ajustes para telas pequenas */
+      }

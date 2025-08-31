@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../Style/Stylebem-vindo.css" />
+  <link rel="stylesheet" href="../Style/Stylemenu.css" />
+  <link rel="stylesheet" href="../Style/Styleloading.css" />
+  <link rel="stylesheet" href="../Style/Styleheader.css" />
+  <link rel="icon" href="../Imagens/Logo TabEngine.png" type="image/x-icon" />
+  <title>Menu - TabEngine</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #000;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .menu-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      padding: 250px 2rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .menu-container button {
+      width: 320px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ccefff;
+      background-color: #111;
+      border: 2px solid #00aaff;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 170, 255, 0.3);
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease,
+        color 0.3s ease;
+    }
+
+    .menu-container button:hover {
+      background-color: #00aaff;
+      color: #000;
+      transform: translateY(-4px);
+      box-shadow: 0 0 20px rgba(0, 170, 255, 0.6);
+    }
+
+    .logo-titulo-container {
+      position: fixed;
+      top: 220px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 1000;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .logo-texto {
+      font-size: 70px;
+      font-family: Arial, sans-serif;
+      color: #00aaff;
+      text-shadow: 0 0 2px #0044ff, 0 0 5px #0044ff, 0 0 10px #0044ff;
+    }
+
+    .menu-container {
+      margin-top: 90px;
+      flex: 1;
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      background-color: #000;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      border-top: 2px solid #00aaff;
+    }
+
+
+    footer a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    footer a:hover {
+      color: #ffffff;
+    }
+
+    .particles-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 70px);
+      z-index: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<div class="particles-container">
+  <div id="particles-js"></div>
+</div>
+
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="logo">
+        <a href="index.html">TabEngine</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="overlay-menu">
+    <ul class="nav-links">
+      <li><a href="index.html">🏠 Página Inicial</a></li>
+      <li><a href="aadm.html">📈 Cadastrar Professores</a></li>
+      <li><a href="restricoes.html">⚙️ Gerenciar Restrições</a></li>
+      <li><a href="registroemails.html">📑 Registrar turmas e Emails</a></li>
+    </ul>
+  </div>
+
+  <div id="loading-screen">
+    <img src="../Imagens/Tab_Engine_mai_rapidin.gif" alt="Carregando..." />
+    <h2>Carregando...</h2>
+  </div>
+
+  <div class="logo-titulo-container">
+    <h1 class="logo-texto">TabEngine</h1>
+  </div>
+
+  <div class="menu-container">
+    <div class="menu">
+      <button id="btn-cadastrar-professores" class="btn-cadastrar-professores"
+        onclick="window.location.href='aadm.html'">
+        Cadastrar Professores
+      </button>
+    </div>
+    <div class="menu">
+      <button id="btn-gerenciar-restricoes" class="btn-gerenciar-restricoes"
+        onclick="window.location.href='restricoes.html'">
+        Gerenciar Restrições
+      </button>
+    </div>
+    <div class="menu">
+      <button id="btn-registrar-turmas" class="btn-controle-ponto" onclick="window.location.href='registroemails.html'">
+        Registrar Turmas
+      </button>
+    </div>
+  </div>
+
+  <!-- Rodape -->
+
+  <footer class="footer">
+    <div class="slogan">
+      <h3>TabEngine</h3>
+      <p>Projetando o futuro</p>
+    </div>
+    <div class="direitos">
+      <p>© 2025 NwareLink — Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const loadingTime = 500;
+
+    setTimeout(() => {
+      document.getElementById("loading-screen").classList.add("fade-out");
+    }, loadingTime);
+
+    // Inicializa partículas
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 110, density: { enable: true, value_area: 800 } },
+        color: { value: "#00aaff" },
+        shape: { type: "circle" },
+        opacity: { value: 0.45 },
+        size: { value: 2.8, random: true },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#00aaff",
+          opacity: 0.3,
+          width: 1,
+        },
+        move: {
+          enable: true,
+          speed: 4,
+          out_mode: "out",
+          // Impede que as partículas saiam do container
+          bounce: false
+        },
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: false },
+          onclick: { enable: false },
+          resize: true,
+        },
+      },
+      retina_detect: true,
+    });
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDM0lPwywlJsjozXZiEb6hbZtC4RcaqOXM",
+      authDomain: "tabengine-37a4f.firebaseapp.com",
+      projectId: "tabengine-37a4f",
+      storageBucket: "tabengine-37a4f.appspot.com",
+      messagingSenderId: "262670013449",
+      appId: "1:262670013449:web:fc18d33b6fc16c313814d8",
+      measurementId: "G-7K8EW4FD1R",
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        const email = user.email.toLowerCase().trim();
+
+        const btnCadastrar = document.getElementById(
+          "btn-cadastrar-professores"
+        );
+        const btnGerenciar = document.getElementById(
+          "btn-gerenciar-restricoes"
+        );
+        const btnRegistrarTurmas = document.getElementById(
+          "btn-registrar-turmas"
+        );
+
+
+        btnCadastrar.style.display = "none";
+        btnGerenciar.style.display = "none";
+        btnRegistrarTurmas.style.display = "none";
+
+        if (email.endsWith("@cps.sp.gov.br")) {
+
+          btnCadastrar.style.display = "flex";
+          btnGerenciar.style.display = "flex";
+          btnRegistrarTurmas.style.display = "flex";
+        }
+
+      } else {
+        window.location.href = "inicio.html";
+      }
+    });
+
+    const toggle = document.querySelector('.menu-toggle');
+    const overlayMenu = document.querySelector('.overlay-menu');
+
+    toggle.addEventListener('click', () => {
+      overlayMenu.classList.toggle('active');
+    });
+  </script>
+
+</body>
+
+</html>

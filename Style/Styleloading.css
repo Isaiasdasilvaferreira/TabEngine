@@ -1,0 +1,43 @@
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #000000, #00aaff);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 1s ease; /* controla o fade */
+}
+
+#loading-screen img {
+  width: 150px; /* tamanho médio do gif */
+  height: auto;
+  margin-bottom: 20px;
+}
+
+#loading-screen h2 {
+  font-size: 24px; /* tamanho médio do texto */
+  color: #fff;
+}
+
+#loading-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 1280px) {
+  /* Ajustes para telas médias */
+}
+
+@media (max-width: 1024px) {
+  /* Ajustes para tablets */
+}
+
+@media (max-width: 800px) {
+  /* Ajustes para telas pequenas */
+}

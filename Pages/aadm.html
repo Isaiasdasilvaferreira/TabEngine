@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../Style/Styleadm.css" />
+  <link rel="stylesheet" href="../Style/Styleloading.css" />
+  <link rel="stylesheet" href="../Style/Styleheader.css" />
+  <link rel="icon" href="../Imagens/Logo TabEngine.png" type="image/x-icon" />
+  <title>Área do Administrador - TabEngine</title>
+</head>
+
+<body>
+  <div id="loading-screen">
+    <img src="../Imagens/Tab_Engine_mai_rapidin.gif" alt="Carregando..." />
+    <h2>Carregando...</h2>
+  </div>
+
+  <header>
+  <nav class="navbar">
+    <div class="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="logo">
+      <a href="index.html">TabEngine</a>
+    </div>
+  </nav>
+</header>
+
+<div class="overlay-menu">
+  <ul class="nav-links">
+    <li><a href="index.html">🏠 Página Inicial</a></li>
+    <li><a href="aadm.html">📈 Cadastrar Professores</a></li>
+    <li><a href="restricoes.html">⚙️ Gerenciar Restrições</a></li>
+    <li><a href="registroemails.html">📑 Registrar turmas e Emails</a></li>
+  </ul>
+</div>
+
+  <div id="particles-js"></div>
+
+  <h1>Cadastro de Professores e Gerenciamento de Turmas</h1>
+
+  <div class="main">
+    <div class="top-bar">
+      <label for="turmas">Turma:</label>
+      <select id="turmas"></select>
+
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" placeholder="Nome do professor" />
+
+      <label for="sobrenome">Sobrenome:</label>
+      <input type="text" id="sobrenome" placeholder="Sobrenome" />
+
+      <label for="materia">Matéria:</label>
+      <input type="text" id="materia" placeholder="Matéria lecionada" />
+
+      <label for="pontuacao">Pontuação:</label>
+      <input type="number" id="pontuacao" step="0.1" placeholder="0.0" />
+
+      <button class="form-btn" onclick="adicionarProfessor()">
+        + Adicionar Professor
+      </button>
+      <div id="avisoCadastro" style="margin-top: 8px; font-weight: bold"></div>
+    </div>
+
+    <div class="tabs" id="abaTurmas"></div>
+
+    <div class="content">
+      <div class="table-container" id="conteudoTabela"></div>
+      <div class="actions">
+        <button class="btn-reiniciar" onclick="reiniciarSelecionado()">
+          Reiniciar
+        </button>
+        <button class="btn-save" onclick="salvarAlteracoes()">
+          Carregar Arquivo
+        </button>
+        <button class="btn-excel" onclick="baixarExcel()">Excel</button>
+        <button class="btn-tabelas-salvas" onclick="tabelasSalvas()">
+          Tabelas Salvas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script>
+    const loadingTime = 500;
+
+    setTimeout(() => {
+      document.getElementById("loading-screen").classList.add("fade-out");
+    }, loadingTime);
+
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 110, density: { enable: true, value_area: 800 } },
+        color: { value: "#00aaff" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5 },
+        size: { value: 3, random: true },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#00aaff",
+          opacity: 0.4,
+          width: 1,
+        },
+        move: {
+          enable: true,
+          speed: 4,
+          out_mode: "out",
+        },
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: false },
+          onclick: { enable: false },
+          resize: true,
+        },
+      },
+      retina_detect: true,
+    });
+
+    // Banco de Dados
+  </script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDM0lPwywlJsjozXZiEb6hbZtC4RcaqOXM",
+      authDomain: "tabengine-37a4f.firebaseapp.com",
+      projectId: "tabengine-37a4f",
+      storageBucket: "tabengine-37a4f.firebasestorage.app",
+      messagingSenderId: "262670013449",
+      appId: "1:262670013449:web:fc18d33b6fc16c313814d8",
+      measurementId: "G-7K8EW4FD1R",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        iniciarListenerProfessores();
+      } else {
+        console.warn("Usuário não autenticado. Continuando sem login.");
+        iniciarListenerProfessores();
+      }
+    });
+    function adicionarProfessor() {
+      const turma = document.getElementById("turmas").value;
+      const nome = document.getElementById("nome").value.trim();
+      const sobrenome = document.getElementById("sobrenome").value.trim();
+      const materia = document.getElementById("materia").value.trim();
+      const pontuacao = parseFloat(
+        document.getElementById("pontuacao").value
+      );
+
+      const aviso = document.getElementById("avisoCadastro");
+
+      if (!nome || !sobrenome || !materia || isNaN(pontuacao)) {
+        aviso.style.color = "red";
+        aviso.textContent = "Preencha todos os campos corretamente.";
+        return;
+      }
+
+      const btn = document.querySelector(".form-btn");
+      btn.disabled = true;
+      aviso.style.color = "black";
+      aviso.textContent = "Salvando...";
+
+      const user = firebase.auth().currentUser;
+
+      db.collection("professores")
+        .add({
+          turma,
+          nome,
+          sobrenome,
+          materia,
+          pontuacao,
+          userId: user.uid,
+        })
+        .then(() => {
+          aviso.style.color = "limegreen";
+          aviso.textContent = "Professor adicionado com sucesso!";
+
+          document.getElementById("nome").value = "";
+          document.getElementById("sobrenome").value = "";
+          document.getElementById("materia").value = "";
+          document.getElementById("pontuacao").value = "";
+        })
+        .catch((error) => {
+          aviso.style.color = "red";
+          aviso.textContent = "Erro ao salvar no banco.";
+          console.error("Erro ao adicionar:", error);
+        })
+        .finally(() => {
+          btn.disabled = false;
+        });
+    }
+
+    function iniciarListenerProfessores() {
+      const container = document.getElementById("conteudoTabela");
+
+      const user = firebase.auth().currentUser;
+
+      db.collection("professores")
+        .where("userId", "==", user.uid)
+        .onSnapshot((querySnapshot) => {
+          container.innerHTML = "";
+
+          const tabela = document.createElement("table");
+          const thead = document.createElement("thead");
+          thead.innerHTML = `
+          <tr>
+            <th>Turma</th>
+            <th>Nome</th>
+            <th>Sobrenome</th>
+            <th>Matéria</th>
+            <th>Pontuação</th>
+            <th>Ação</th>
+          </tr>
+        `;
+
+          const tbody = document.createElement("tbody");
+
+          querySnapshot.forEach((doc) => {
+            const dados = doc.data();
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+            <td>${dados.turma}</td>
+            <td>${dados.nome}</td>
+            <td>${dados.sobrenome}</td>
+            <td>${dados.materia}</td>
+            <td>${dados.pontuacao}</td>
+            <td><button class="btn-x" onclick="deletarProfessor('${doc.id}')">×</button></td>
+
+          `;
+
+            tbody.appendChild(tr);
+          });
+
+          tabela.appendChild(thead);
+          tabela.appendChild(tbody);
+          container.appendChild(tabela);
+        });
+    }
+
+    function deletarProfessor(id) {
+      db.collection("professores")
+        .doc(id)
+        .delete()
+        .then(() => { });
+    }
+
+    function deletarSelecionado() {
+      alert("Use os botões individuais da tabela para deletar.");
+    }
+
+    function salvarAlteracoes() {
+      alert("Salvamento automático já está ativado.");
+    }
+
+    function baixarExcel() {
+      alert("Exportação para Excel ainda não implementada.");
+    }
+  </script>
+
+  <script>
+    function reiniciarSelecionado() {
+      if (
+        confirm("Você tem certeza que deseja deletar TODOS os professores?")
+      ) {
+        db.collection("professores")
+          .get()
+          .then((querySnapshot) => {
+            const batch = db.batch();
+
+            querySnapshot.forEach((doc) => {
+              batch.delete(doc.ref);
+            });
+
+            batch
+              .commit()
+              .then(() => {
+                alert("Todos os professores foram deletados com sucesso.");
+                carregarProfessores();
+              })
+              .catch((error) => {
+                console.error("Erro ao deletar todos:", error);
+                alert("Erro ao deletar os professores.");
+              });
+          });
+      }
+    }
+
+    firebase.auth().onAuthStateChanged((user) => {
+      carregarTurmas();
+      iniciarListenerProfessores();
+    });
+
+    function carregarTurmas() {
+      const selectTurmas = document.getElementById("turmas");
+      selectTurmas.innerHTML = ""; // limpa o select
+
+      const grupos = {
+        Manhã: [],
+        Tarde: [],
+        Noite: [],
+      };
+
+      const user = firebase.auth().currentUser;
+
+      db.collection("turmas")
+        .where("userId", "==", user.uid)
+        .orderBy("timestamp")
+        .get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            const turma = doc.data();
+            if (grupos[turma.turno]) {
+              grupos[turma.turno].push(turma);
+            }
+          });
+
+          function extrairNumero(nome) {
+            const match = nome.match(/^(\d+)/);
+            return match ? parseInt(match[1]) : Number.MAX_SAFE_INTEGER;
+          }
+
+          for (const turno in grupos) {
+            grupos[turno].sort((a, b) => {
+              const numA = extrairNumero(a.nome);
+              const numB = extrairNumero(b.nome);
+
+              if (numA !== numB) {
+                return numA - numB;
+              } else {
+                const textoA = a.nome.replace(/^\d+\s*/, "").toLowerCase();
+                const textoB = b.nome.replace(/^\d+\s*/, "").toLowerCase();
+                return textoA.localeCompare(textoB, "pt-BR");
+              }
+            });
+          }
+
+          const ordemTurnos = ["Manhã", "Tarde", "Noite"];
+
+          ordemTurnos.forEach((turno) => {
+            if (grupos[turno] && grupos[turno].length > 0) {
+              const optgroup = document.createElement("optgroup");
+              optgroup.label = turno;
+
+              grupos[turno].forEach((turma) => {
+                const option = document.createElement("option");
+                option.value = turma.nome;
+                option.textContent = turma.nome;
+                optgroup.appendChild(option);
+              });
+
+              selectTurmas.appendChild(optgroup);
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("Erro ao carregar turmas do Firebase:", error);
+        });
+    }
+
+    const toggle = document.querySelector('.menu-toggle');
+    const overlayMenu = document.querySelector('.overlay-menu');
+
+    toggle.addEventListener('click', () => {
+      overlayMenu.classList.toggle('active');
+    });
+  </script>
+</body>
+
+</html>
